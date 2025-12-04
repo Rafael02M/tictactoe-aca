@@ -17,10 +17,13 @@ public class GameEngine
 
     private bool _running;
     private string _lastResult;
+    private int _totalGames = 0;
+    private int _winsPlayer1 = 0;
+    private int _winsPlayer2 = 0;
+    private int _ties = 0;
 
     public GameEngine()
     {
-        // _renderer =new
         _renderer = new ConsoleRenderer();
         _board = new Board(_renderer);
         _currentState = new MenuState();
@@ -97,14 +100,18 @@ public class GameEngine
         switch (selectedOption)
         {
             case 0:
+                SetupPvP();
+                _currentState = new PlayingState();
                 break;
             case 1:
                 SetupPvAi();
                 _currentState = new PlayingState();
                 break;
             case 2:
+                ViewStatitics();
                 break;
             case 3:
+                ResetStatitics();
                 break;
             case 4:
                 ShowInstructions();
@@ -113,6 +120,19 @@ public class GameEngine
                 Exit();
                 break;
         }
+    }
+
+    private void SetupPvP()
+    {
+        _renderer?.Clear();
+        Console.WriteLine("Enter name of Player 1: ");
+        string name = Console.ReadLine();
+        Console.WriteLine("Enter name of Player 2: ");
+        string name2 = Console.ReadLine();
+
+        _player1 = new HumanPlayer(string.IsNullOrWhiteSpace(name) ? "Player 1" : name, 'X');
+        _player2 = new HumanPlayer(string.IsNullOrWhiteSpace(name2) ? "Player 2" : name2, 'O');
+        _currentPlayer = _player1;
     }
 
     private void SetupPvAi()
@@ -200,18 +220,67 @@ public class GameEngine
             {
                 _lastResult = $"{_currentPlayer.Name} wins!";
                 _currentState = new GameOverState();
-                return;
+                _totalGames++;
+                if(_currentPlayer == _player1)
+                {
+                    _winsPlayer1++;
+                } else
+                {
+                    _winsPlayer2++;
+                }
+                    return;
             }
 
             if (_board.IsFull())
             {
                 _lastResult = ":) Tie Game!";
                 _currentState = new GameOverState();
+                _totalGames++;
+                _ties++;
                 return;
             }
 
             _currentPlayer = _currentPlayer == _player1 ? _player2 : _player1;
         }
+    }
+
+    private void ViewStatitics()
+    {
+        _renderer?.Clear();
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("\n╔══════════════════════════════════════╗");
+        Console.WriteLine("║           GAME STATITICS             ║");
+        Console.WriteLine("╚══════════════════════════════════════╝");
+        Console.ResetColor();
+
+        Console.WriteLine($"Total games: {_totalGames}");
+        Console.WriteLine($"Player 1 wins: {_winsPlayer1}");
+        Console.WriteLine($"Player 2 wins: {_winsPlayer2}");
+        Console.WriteLine($"Ties: {_ties}");
+
+        Console.ResetColor();
+        Console.ReadKey();
+
+    }
+
+    private void ResetStatitics()
+    {
+        _renderer?.Clear();
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("\n╔══════════ ═══════════════════════════╗");
+        Console.WriteLine("║          RESET STATITICS             ║");
+        Console.WriteLine("╚══════════════════════════════════════╝");
+        Console.ResetColor();
+
+        Console.WriteLine("Statistic is reset!");
+
+        _totalGames = 0;
+        _winsPlayer1 = 0;
+        _winsPlayer2 = 0;
+        _ties = 0;
+
+        Console.ResetColor();
+        Console.ReadKey();
     }
     
     private void ShowInstructions()
@@ -261,7 +330,6 @@ public class GameEngine
         Console.ResetColor();
     }
 
-
     public void ShowGameOver()
     {
         _renderer?.Clear();
@@ -278,5 +346,6 @@ public class GameEngine
         Console.ResetColor();
 
         Console.ReadKey(true);
+        _currentState = new MenuState();
     }
 }
