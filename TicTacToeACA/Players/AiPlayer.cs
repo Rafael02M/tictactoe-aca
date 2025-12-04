@@ -24,7 +24,7 @@ public class AiPlayer : Player
             case Difficulty.Easy:
                 return GetRandomMove(board);
             case Difficulty.Medium:
-                return -1;
+                return GetMediumMove(board);
             case Difficulty.Hard:
                 return GetSmartMove(board);
         }
@@ -37,6 +37,20 @@ public class AiPlayer : Player
         var available = board.GetAvailablePositions();
         int randomIndex = _random.Next(0, available.Length);
         return available[randomIndex];
+    }
+
+    private int GetMediumMove(IBoard board)
+    {
+        int winMove = FindWinningMove(board, Symbol);
+        if (winMove != -1) return winMove;
+
+        char opponentSymbol = Symbol == 'X' ? 'O' : 'X';
+        int blockMove = FindWinningMove(board, opponentSymbol);
+        if(blockMove != -1) return blockMove;
+
+        var available = board.GetAvailablePositions();
+        return available[_random.Next(0, available.Length)];
+
     }
 
     private int GetSmartMove(IBoard board)
@@ -75,7 +89,7 @@ public class AiPlayer : Player
 
     private int FindWinningMove(IBoard board, char symbol)
     {
-        for (int i = 0; i < Board.Width*Board.Height; i++)
+        for (int i = 0; i < Board.Width * Board.Height; i++)
         {
             if (board.IsPositionEmpty(i))
             {
